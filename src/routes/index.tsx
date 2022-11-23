@@ -10,7 +10,7 @@ type ReturnType = React.ReactElement<
 export const Routes = (): ReturnType => {
   const element = useRoutes([
     {
-      path: "/",
+      path: "/app/:slug",
       element: <Home />,
     },
   ]);
