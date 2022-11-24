@@ -1,5 +1,6 @@
-import { Paper, Box } from "@mui/material";
+import { Box, Paper } from "@mui/material";
 import { ReactElement } from "react";
+import DraftEditor from "../components/DraftEditor";
 import ScrollableTabs from "../components/ScrollableTabs";
 
 function Home(): ReactElement {
@@ -11,11 +12,13 @@ function Home(): ReactElement {
         position: "relative",
       }}
     >
+      <DraftEditor />
       <Box
         sx={{
           position: "absolute",
           bottom: 0,
           width: "100%",
+          zIndex: 9,
         }}
       >
         <ScrollableTabs />

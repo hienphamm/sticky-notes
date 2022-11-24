@@ -3,34 +3,43 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import React, { ReactElement, useState } from "react";
 
+const initTabs = [
+  {
+    value: 1,
+    label: "Async Await",
+  },
+  {
+    value: 2,
+    label: "Hosting",
+  },
+  {
+    value: 3,
+    label: "Scope",
+  },
+];
+
 function ScrollableTabs(): ReactElement {
-  const [value, setValue] = useState("one");
+  const [selectedTab, setSelectedTab] = useState(1);
 
   const handleChange = (
     event: React.SyntheticEvent,
-    newValue: string,
+    newValue: number,
   ): void => {
-    setValue(newValue);
+    setSelectedTab(newValue);
   };
 
   return (
     <Box sx={{ width: "100%" }}>
       <Tabs
-        value={value}
+        value={selectedTab}
         onChange={handleChange}
         aria-label="wrapped label tabs example"
         variant="scrollable"
         scrollButtons="auto"
       >
-        <Tab
-          value="one"
-          label="New Arrivals in the Longest Text of Nonfiction that should appear in the next line"
-          wrapped
-        />
-        <Tab value="two" label="Item Two" />
-        <Tab value="three" label="Item Three" />
-        <Tab value="three" label="Item Three" />
-        <Tab value="three" label="Item Three" />
+        {initTabs.map((tab) => (
+          <Tab key={tab.value} value={tab.value} label={tab.label} wrapped />
+        ))}
       </Tabs>
     </Box>
   );
