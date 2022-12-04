@@ -31,7 +31,7 @@ function DraftEditor(): JSX.Element {
         ],
       }}
       editorStyle={{
-        height: "calc(100vh - 255px)",
+        height: "calc(100vh - 210px)",
       }}
     />
   );
