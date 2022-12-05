@@ -1,12 +1,12 @@
 import { Tab as TabMui, Tabs, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
-import React, { ReactElement } from "react";
+import React, { ReactElement, useId } from "react";
 import { Tab } from "../models";
 
 interface ScrollableTabsProps {
   tabs: Tab[] | null;
   loaded: boolean;
-  selectedTab: number;
+  selectedTab: number | null;
   handleChangeTab: (event: React.SyntheticEvent, newValue: number) => void;
 }
 
@@ -16,6 +16,8 @@ function ScrollableTabs({
   selectedTab,
   handleChangeTab,
 }: ScrollableTabsProps): ReactElement {
+  const id = useId();
+
   return (
     <Box sx={{ width: "100%", bgcolor: "common.white" }}>
       <Tabs
@@ -27,9 +29,10 @@ function ScrollableTabs({
         {!loaded
           ? "Loading ..."
           : Array.isArray(tabs) &&
+            selectedTab !== null &&
             tabs?.map((tab) => (
               <TabMui
-                key={tab.id}
+                key={id}
                 value={tab.id}
                 label={<Typography>{tab.attributes.title}</Typography>}
                 wrapped

@@ -1,5 +1,5 @@
 import { Box, Paper } from "@mui/material";
-import React, { ReactElement, useState, useMemo, useEffect } from "react";
+import React, { ReactElement, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import DraftEditor from "../components/DraftEditor";
 import ScrollableTabs from "../components/ScrollableTabs";
@@ -10,7 +10,7 @@ import { getTab, getTabs } from "../services";
 function Home(): ReactElement {
   const location = useLocation();
 
-  const [selectedTab, setSelectedTab] = useState(1);
+  const [selectedTab, setSelectedTab] = useState<number | null>(null);
 
   const category = useMemo(() => {
     return location.pathname;
@@ -28,11 +28,14 @@ function Home(): ReactElement {
 
   const tab = useAxios<string, Tab[]>(
     getTab({
-      category,
       id: tabId!,
     }),
     Boolean(tabId),
   );
+
+  useEffect(() => {
+    setSelectedTab(null);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (Array.isArray(tabs.data) && tabs.data?.length !== 0) {
@@ -55,7 +58,15 @@ function Home(): ReactElement {
         position: "relative",
       }}
     >
-      <DraftEditor loaded={tab.loaded} initContent={""} tabId={tabId!} />
+      <DraftEditor
+        loaded={tab.loaded}
+        initContent={
+          tab.data?.[0]?.attributes.content != null
+            ? tab.data?.[0]?.attributes.content
+            : null
+        }
+        tabId={tabId!}
+      />
       <Box
         sx={{
           position: "absolute",

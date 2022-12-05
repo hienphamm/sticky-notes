@@ -1,3 +1,5 @@
+import { RawDraftContentState } from "react-draft-wysiwyg";
+
 interface CategoryAttributes {
   title: string;
   link: string;
@@ -12,7 +14,7 @@ interface TabAttributes {
   category: string;
   title: string;
   slug: string;
-  content: string;
+  content: RawDraftContentState;
 }
 
 export interface Tab {

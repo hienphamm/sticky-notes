@@ -56,10 +56,10 @@ export const getTabs = (payload: Omit<ParamsTab, "id">): AxiosPayload => {
   };
 };
 
-export const getTab = (params: ParamsTab): AxiosPayload => {
-  const { category, id } = params;
+export const getTab = (params: { id: number }): AxiosPayload => {
+  const { id } = params;
   return {
-    url: `${url.tabs}?filters[category][link][$eq]=${category}&filters[id][$eq]=${id}`,
+    url: `${url.tabs}?filters[id][$eq]=${id}`,
     method: "GET",
   };
 };

@@ -1,51 +1,80 @@
-import { ContentState, EditorState } from "draft-js";
-import { useEffect, useState } from "react";
+import {
+  convertFromRaw,
+  convertToRaw,
+  EditorState,
+  RawDraftContentState,
+} from "draft-js";
+import { useCallback, useEffect, useState } from "react";
 import { Editor } from "react-draft-wysiwyg";
+import useDebounce from "../hooks/useDebounce";
+import { updateTab } from "../services";
 
 interface DraftEditorProps {
-  initContent: string;
+  initContent: RawDraftContentState | null;
   loaded: boolean;
   tabId: number;
 }
 
-// const IDLE_TIMEOUT = 1 * 1000;
+const IDLE_TIMEOUT = 1 * 1000;
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+const originRawDraft = {
+  blocks: [],
+  entityMap: {},
+} as RawDraftContentState;
 
 function DraftEditor({
   initContent,
   loaded,
   tabId,
 }: DraftEditorProps): JSX.Element {
-  const [editorValue, setEditorValue] = useState(
+  const [editorState, setEditorState] = useState(
     EditorState.createWithContent(
-      ContentState.createFromText(loaded ? initContent : "Loading ..."),
+      convertFromRaw(initContent ?? originRawDraft),
     ),
   );
+  const [convertedEditorState, setConvertedEditorState] = useState(
+    convertToRaw(editorState.getCurrentContent()),
+  );
+
+  const debouncedEditorState = useDebounce(convertedEditorState, IDLE_TIMEOUT);
 
   useEffect(() => {
-    setEditorValue(
+    setEditorState(
       EditorState.createWithContent(
-        ContentState.createFromText(loaded ? initContent : "Loading ..."),
+        convertFromRaw(initContent ?? originRawDraft),
       ),
     );
   }, [initContent, loaded]);
 
-  const onEditorStateChange = (value: EditorState): void => {
-    setEditorValue(value);
-  };
+  const onEditorStateChange = useCallback(
+    (value: EditorState) => {
+      setEditorState(value);
+      const converted = convertToRaw(editorState.getCurrentContent());
+      setConvertedEditorState(converted);
+    },
+    [editorState],
+  );
 
-  // const onUpdateContent = (): void => {
-  //   updateTab(tabId, {
-  //     content: editorValue as any,
-  //   }).catch((err) => {
-  //     console.log(err);
-  //   });
-  // };
+  useEffect(() => {
+    onUpdateContent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(debouncedEditorState)]);
+
+  const onUpdateContent = useCallback(() => {
+    if (Number.isInteger(tabId)) {
+      updateTab(tabId, {
+        content: debouncedEditorState,
+      }).catch((err) => {
+        console.log(err);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(debouncedEditorState), tabId]);
 
   return (
     <Editor
-      editorState={editorValue}
-      wrapperClassName="demo-wrapper"
-      editorClassName="demo-editor"
+      editorState={editorState}
       onEditorStateChange={onEditorStateChange}
       toolbar={{
         options: [
