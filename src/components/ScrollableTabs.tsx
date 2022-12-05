@@ -1,45 +1,40 @@
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
+import { Tab as TabMui, Tabs, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
-import React, { ReactElement, useState } from "react";
+import React, { ReactElement } from "react";
+import { Tab } from "../models";
 
-const initTabs = [
-  {
-    value: 1,
-    label: "Async Await",
-  },
-  {
-    value: 2,
-    label: "Hosting",
-  },
-  {
-    value: 3,
-    label: "Scope",
-  },
-];
+interface ScrollableTabsProps {
+  tabs: Tab[] | null;
+  loaded: boolean;
+  selectedTab: number;
+  handleChangeTab: (event: React.SyntheticEvent, newValue: number) => void;
+}
 
-function ScrollableTabs(): ReactElement {
-  const [selectedTab, setSelectedTab] = useState(1);
-
-  const handleChange = (
-    event: React.SyntheticEvent,
-    newValue: number,
-  ): void => {
-    setSelectedTab(newValue);
-  };
-
+function ScrollableTabs({
+  tabs,
+  loaded,
+  selectedTab,
+  handleChangeTab,
+}: ScrollableTabsProps): ReactElement {
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%", bgcolor: "common.white" }}>
       <Tabs
         value={selectedTab}
-        onChange={handleChange}
-        aria-label="wrapped label tabs example"
+        onChange={handleChangeTab}
         variant="scrollable"
         scrollButtons="auto"
       >
-        {initTabs.map((tab) => (
-          <Tab key={tab.value} value={tab.value} label={tab.label} wrapped />
-        ))}
+        {!loaded
+          ? "Loading ..."
+          : Array.isArray(tabs) &&
+            tabs?.map((tab) => (
+              <TabMui
+                key={tab.id}
+                value={tab.id}
+                label={<Typography>{tab.attributes.title}</Typography>}
+                wrapped
+              />
+            ))}
       </Tabs>
     </Box>
   );

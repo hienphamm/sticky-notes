@@ -10,6 +10,7 @@ import {
   FormControl,
   FormHelperText,
   Grid,
+  IconButton,
   InputAdornment,
   ListItemIcon,
   ListItemText,
@@ -24,14 +25,19 @@ import {
 
 import { useSnackbar } from "notistack";
 
-import React, { ReactElement, useMemo, useState } from "react";
+import React, { ReactElement, useCallback, useMemo, useState } from "react";
 
 import { Link, useLocation } from "react-router-dom";
 
 import { ActionType } from "../constants";
-import useFetch from "../hooks/useFetch";
-import { Category } from "../models";
-import { addNewCategory, deleteCategory, getCategory } from "../services";
+import useAxios from "../hooks/useAxios";
+import { Category, PayloadCategory } from "../models";
+import {
+  addNewCategory,
+  deleteCategory,
+  updateCategory,
+  getCategories,
+} from "../services";
 import CommonModal from "./Modal";
 
 interface Props {
@@ -58,17 +64,27 @@ const Header = (): ReactElement => (
 const Sidebar = (): ReactElement => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const [loading, categories, refetch] = useFetch<Category[]>(getCategory);
+  const { data, onRefetch, loaded } = useAxios<any, Category[]>(
+    getCategories(),
+  );
   const { pathname } = useLocation();
   const [isVisibleModal, setIsVisibleModal] = useState(false);
-  const [actionType, setActionType] = useState<ActionType | null>(null);
+  const [actionType, setActionType] = useState<Exclude<
+    ActionType,
+    "new"
+  > | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<
     Category | undefined
   >(undefined);
-  const [value, setValue] = useState("");
-  const [error, setError] = useState("");
+  const [valueAddCategory, setValueAddCategory] = useState("");
+  const [valueEditCategory, setValueEditCategory] = useState("");
+  const [error, setError] = useState({
+    new: "",
+    edit: "",
+  });
+  const [isPending, setIsPending] = useState(false);
 
-  const onDeleteCategory = (): void => {
+  const onDeleteCategory = useCallback(() => {
     if (selectedCategory?.id != null) {
       deleteCategory(selectedCategory?.id)
         .then((result) => {
@@ -79,7 +95,7 @@ const Sidebar = (): ReactElement => {
             });
             onCloseModal();
             setSelectedCategory(undefined);
-            typeof refetch === "function" && refetch();
+            handleRefetchData();
           }
         })
         .catch((err) => {
@@ -89,16 +105,154 @@ const Sidebar = (): ReactElement => {
           });
         });
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enqueueSnackbar, selectedCategory?.id]);
 
   const modalTitle = useMemo(() => {
     const mapTitle = {
-      new: "Add new category",
       edit: "Edit",
       delete: "Delete",
     };
     return actionType !== null && mapTitle[actionType];
   }, [actionType]);
+
+  const onCloseModal = useCallback(() => {
+    setActionType(null);
+    setIsVisibleModal(false);
+    resetError();
+  }, []);
+
+  const resetError = (): void => {
+    setError({
+      edit: "",
+      new: "",
+    });
+  };
+
+  const handleError = useCallback(
+    (value: string) => {
+      if (value.length === 0) {
+        setError({
+          edit: actionType === "edit" ? "Cannot be empty" : "",
+          new: actionType !== "edit" ? "Cannot be empty" : "",
+        });
+      } else {
+        setError({
+          edit: "",
+          new: "",
+        });
+      }
+    },
+    [actionType],
+  );
+
+  const handleChangeValue = useCallback(
+    (
+      event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+      type: "new" | "edit",
+    ) => {
+      const newValue = event.target.value;
+      if (type === "new") {
+        setValueAddCategory(newValue);
+      } else {
+        setValueEditCategory(newValue);
+      }
+      handleError(newValue);
+    },
+    [handleError],
+  );
+
+  const handleRefetchData = useCallback(() => {
+    typeof onRefetch === "function" && onRefetch();
+  }, [onRefetch]);
+
+  const convertPayload = (value: string): PayloadCategory => {
+    const payload = {
+      title: value,
+      link: `/app/${value.toLocaleLowerCase().replace(" ", "-")}`,
+    };
+    return payload;
+  };
+
+  const onAddNewCategory = (): void => {
+    if (valueAddCategory.length === 0) {
+      handleError(valueAddCategory);
+    } else {
+      setIsPending(true);
+      const payload = convertPayload(valueAddCategory);
+      addNewCategory(payload)
+        .then((result) => {
+          const { status } = result;
+          if (status === 200) {
+            enqueueSnackbar("Add new Category Successfully !", {
+              variant: "success",
+            });
+            setValueAddCategory("");
+            handleRefetchData();
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          if (err.response.data.error.message !== null) {
+            enqueueSnackbar(err.response.data.error.message, {
+              variant: "error",
+            });
+          } else {
+            enqueueSnackbar(err.message, {
+              variant: "error",
+            });
+          }
+        })
+        .finally(() => {
+          setIsPending(false);
+        });
+    }
+  };
+
+  const onEditCategory = useCallback(() => {
+    if (valueEditCategory.length === 0) {
+      handleError(valueEditCategory);
+    } else {
+      if (selectedCategory?.id != null) {
+        setIsPending(true);
+        const payload = convertPayload(valueEditCategory);
+        updateCategory(selectedCategory?.id, payload)
+          .then((result) => {
+            const { status } = result;
+            if (status === 200) {
+              enqueueSnackbar("Edit new Category Successfully !", {
+                variant: "success",
+              });
+              setValueEditCategory("");
+              handleRefetchData();
+              onCloseModal();
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            if (err.response.data.error.message !== null) {
+              enqueueSnackbar(err.response.data.error.message, {
+                variant: "error",
+              });
+            } else {
+              enqueueSnackbar(err.message, {
+                variant: "error",
+              });
+            }
+          })
+          .finally(() => {
+            setIsPending(false);
+          });
+      }
+    }
+  }, [
+    enqueueSnackbar,
+    handleError,
+    handleRefetchData,
+    onCloseModal,
+    selectedCategory?.id,
+    valueEditCategory,
+  ]);
 
   const renderContentModal = useMemo(() => {
     const deleteContent = (
@@ -108,17 +262,50 @@ const Sidebar = (): ReactElement => {
       </Typography>
     );
     const mapContent = {
-      new: <div>Add new Category</div>,
-      edit: <div>Edit Category {selectedCategory?.attributes.title}</div>,
+      edit: (
+        <FormControl
+          error={Boolean(error.edit)}
+          sx={{ p: 1.5, width: "100%" }}
+          variant="outlined"
+        >
+          <OutlinedInput
+            size="small"
+            fullWidth
+            value={valueEditCategory}
+            onChange={(event) => handleChangeValue(event, "edit")}
+            onKeyPress={(event) => {
+              if (event.key === "Enter") {
+                onEditCategory();
+              }
+            }}
+            placeholder="Enter Category ..."
+          />
+          <FormHelperText>{error.edit}</FormHelperText>
+        </FormControl>
+      ),
       delete: deleteContent,
     };
     return actionType !== null && mapContent[actionType];
-  }, [actionType, selectedCategory?.attributes.title]);
+  }, [
+    actionType,
+    error.edit,
+    handleChangeValue,
+    onEditCategory,
+    selectedCategory?.attributes.title,
+    valueEditCategory,
+  ]);
 
   const renderButtonHandler = useMemo(() => {
     const mapButton = {
-      new: <Button variant="contained">Submit</Button>,
-      edit: <Button variant="contained">Submit</Button>,
+      edit: (
+        <Button
+          variant="contained"
+          onClick={onEditCategory}
+          disabled={isPending}
+        >
+          Submit
+        </Button>
+      ),
       delete: (
         <Button variant="contained" onClick={onDeleteCategory}>
           Confirm
@@ -126,57 +313,16 @@ const Sidebar = (): ReactElement => {
       ),
     };
     return actionType !== null && mapButton[actionType];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [actionType]);
+  }, [actionType, onDeleteCategory, onEditCategory, isPending]);
 
-  const onOpenModal = (type: ActionType, category?: Category): void => {
+  const onOpenModal = (
+    type: Exclude<ActionType, "new">,
+    category?: Category,
+  ): void => {
     setActionType(type);
     setIsVisibleModal(true);
     setSelectedCategory(category);
-  };
-
-  const onCloseModal = (): void => {
-    setIsVisibleModal(false);
-  };
-
-  const handleChangeValue = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    const newValue = event.target.value;
-    setValue(newValue);
-    if (newValue.length === 0) {
-      setError("Cannot be empty");
-    } else {
-      setError("");
-    }
-  };
-
-  const onAddNewCategory = (): void => {
-    if (value.length === 0) {
-      setError("Cannot be empty");
-    } else {
-      const payload = {
-        title: value,
-        link: `/app/${value.toLocaleLowerCase().replace(" ", "-")}`,
-      };
-      addNewCategory(payload)
-        .then((result) => {
-          const { status } = result;
-          if (status === 200) {
-            enqueueSnackbar("Add new Category Successfully !", {
-              variant: "success",
-            });
-            setValue("");
-            typeof refetch === "function" && refetch();
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          enqueueSnackbar(err.message, {
-            variant: "error",
-          });
-        });
-    }
+    resetError();
   };
 
   return (
@@ -188,13 +334,13 @@ const Sidebar = (): ReactElement => {
           position: "relative",
         }}
       >
-        {loading === true ? (
+        {!loaded ? (
           "Loading ..."
         ) : (
           <>
             <MenuList>
-              {Array.isArray(categories) ? (
-                categories?.map((category) => (
+              {Array.isArray(data) ? (
+                data?.map((category) => (
                   <Link
                     to={category.attributes.link}
                     key={category.id}
@@ -215,7 +361,10 @@ const Sidebar = (): ReactElement => {
                         {category.attributes.title}
                       </ListItemText>
                       <ListItemIcon
-                        onClick={() => onOpenModal("edit", category)}
+                        onClick={() => {
+                          setValueEditCategory(category.attributes.title);
+                          onOpenModal("edit", category);
+                        }}
                       >
                         <ModeEditIcon fontSize="small" />
                       </ListItemIcon>
@@ -234,31 +383,42 @@ const Sidebar = (): ReactElement => {
               )}
             </MenuList>
 
-            <FormControl
-              error={Boolean(error)}
-              sx={{ p: 1.5, width: "100%" }}
-              variant="outlined"
-            >
-              <OutlinedInput
-                size="small"
-                fullWidth
-                value={value}
-                onChange={handleChangeValue}
-                endAdornment={
-                  <InputAdornment
-                    position="end"
-                    onClick={onAddNewCategory}
-                    sx={{
-                      cursor: "pointer",
-                    }}
-                  >
-                    <SaveIcon />
-                  </InputAdornment>
-                }
-                placeholder="Add new Category ..."
-              />
-              <FormHelperText>{error}</FormHelperText>
-            </FormControl>
+            {actionType !== "edit" && (
+              <FormControl
+                error={Boolean(error.new)}
+                sx={{ p: 1.5, width: "100%" }}
+                variant="outlined"
+              >
+                <OutlinedInput
+                  size="small"
+                  fullWidth
+                  value={valueAddCategory}
+                  onChange={(event) => handleChangeValue(event, "new")}
+                  onKeyPress={(event) => {
+                    if (event.key === "Enter") {
+                      onAddNewCategory();
+                    }
+                  }}
+                  endAdornment={
+                    <InputAdornment
+                      position="end"
+                      sx={{
+                        cursor: "pointer",
+                      }}
+                    >
+                      <IconButton
+                        disabled={isPending}
+                        onClick={onAddNewCategory}
+                      >
+                        <SaveIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                  placeholder="Enter Category ..."
+                />
+                <FormHelperText>{error.new}</FormHelperText>
+              </FormControl>
+            )}
           </>
         )}
 

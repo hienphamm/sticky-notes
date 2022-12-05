@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ResponseType } from "../models";
 
@@ -11,7 +11,7 @@ function useFetch<T>(
   const [loading, setLoading] = useState(false);
   const [refetch, setRefetch] = useState(false);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     setLoading(true);
     api()
       .then((result) => {
@@ -26,7 +26,11 @@ function useFetch<T>(
       .finally(() => {
         setLoading(false);
       });
-  }, [api, refetch]);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleRefetch = (): void => {
     setRefetch(!refetch);

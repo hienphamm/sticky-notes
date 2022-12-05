@@ -26,5 +26,6 @@ module.exports = {
     "@typescript-eslint/triple-slash-reference": "off",
     "prettier/prettier": ["error", { endOfLine: "auto" }],
     "@typescript-eslint/strict-boolean-expressions": "warn",
+    "@typescript-eslint/no-non-null-assertion": "warn",
   },
 };
