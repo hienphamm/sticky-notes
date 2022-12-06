@@ -4,17 +4,19 @@ import { useLocation } from "react-router-dom";
 import DraftEditor from "../components/DraftEditor";
 import ScrollableTabs from "../components/ScrollableTabs";
 import useAxios from "../hooks/useAxios";
-import { Tab } from "../models";
-import { getTab, getTabs } from "../services";
+import { Category, Tab } from "../models";
+import { getCategories, getTabs } from "../services";
 
 function Home(): ReactElement {
   const location = useLocation();
 
-  const [selectedTab, setSelectedTab] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<number | null>(null);
 
   const category = useMemo(() => {
     return location.pathname;
   }, [location.pathname]);
+
+  const categories = useAxios<any, Category[]>(getCategories());
 
   const tabs = useAxios<string, Tab[]>(
     getTabs({
@@ -22,67 +24,73 @@ function Home(): ReactElement {
     }),
   );
 
-  const tabId = useMemo(() => {
-    return tabs.data?.find((x) => x.id === selectedTab)?.id;
-  }, [selectedTab, tabs]);
+  const categoryId = useMemo(() => {
+    return (
+      Array.isArray(categories.data) &&
+      categories.data.find((category) => category.id)?.id
+    );
+  }, [categories.data]);
 
-  const tab = useAxios<string, Tab[]>(
-    getTab({
-      id: tabId!,
-    }),
-    Boolean(tabId),
-  );
+  const tabId = useMemo(() => {
+    return tabs.data?.find((x) => x.id === activeTab)?.id;
+  }, [activeTab, tabs]);
 
   useEffect(() => {
-    setSelectedTab(null);
+    return () => {
+      setActiveTab(null);
+    };
   }, [location.pathname]);
 
   useEffect(() => {
     if (Array.isArray(tabs.data) && tabs.data?.length !== 0) {
-      setSelectedTab(tabs?.data[0].id);
+      setActiveTab(tabs?.data[0]?.id);
     }
-  }, [setSelectedTab, tabs?.data]);
+  }, [setActiveTab, tabs?.data]);
 
   const handleChangeTab = (
     event: React.SyntheticEvent,
     newValue: number,
   ): void => {
-    setSelectedTab(newValue);
+    setActiveTab(newValue);
   };
 
   return (
-    <Paper
-      variant="outlined"
-      sx={{
-        height: "calc(100vh - 120px)",
-        position: "relative",
-      }}
-    >
-      <DraftEditor
-        loaded={tab.loaded}
-        initContent={
-          tab.data?.[0]?.attributes.content != null
-            ? tab.data?.[0]?.attributes.content
-            : null
-        }
-        tabId={tabId!}
-      />
-      <Box
+    <>
+      <Paper
+        variant="outlined"
         sx={{
-          position: "absolute",
-          bottom: 0,
-          width: "100%",
-          zIndex: 9,
+          height: "calc(100vh - 120px)",
+          position: "relative",
         }}
       >
-        <ScrollableTabs
-          selectedTab={selectedTab}
+        <DraftEditor
           loaded={tabs.loaded}
-          tabs={tabs.data}
-          handleChangeTab={handleChangeTab}
+          initContent={
+            tabs.data?.[0]?.attributes.content != null
+              ? tabs.data?.[0]?.attributes.content
+              : null
+          }
+          tabId={tabId!}
         />
-      </Box>
-    </Paper>
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 0,
+            width: "100%",
+            zIndex: 9,
+          }}
+        >
+          <ScrollableTabs
+            categoryId={Number(categoryId)}
+            activeTab={activeTab}
+            loaded={tabs.loaded}
+            tabs={tabs.data}
+            handleChangeTab={handleChangeTab}
+            onRefetchData={tabs.onRefetch}
+          />
+        </Box>
+      </Paper>
+    </>
   );
 }
 

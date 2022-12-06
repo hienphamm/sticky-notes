@@ -15,7 +15,7 @@ interface DraftEditorProps {
   tabId: number;
 }
 
-const IDLE_TIMEOUT = 1 * 1000;
+const IDLE_TIMEOUT = 0.5 * 1000;
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const originRawDraft = {

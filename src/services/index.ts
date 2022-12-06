@@ -51,15 +51,7 @@ export const updateCategory = async (
 export const getTabs = (payload: Omit<ParamsTab, "id">): AxiosPayload => {
   const { category } = payload;
   return {
-    url: `${url.tabs}?filters[category][link][$eq]=${category}`,
-    method: "GET",
-  };
-};
-
-export const getTab = (params: { id: number }): AxiosPayload => {
-  const { id } = params;
-  return {
-    url: `${url.tabs}?filters[id][$eq]=${id}`,
+    url: `${url.tabs}?sort[0]=id&filters[category][link][$eq]=${category}`,
     method: "GET",
   };
 };
@@ -69,6 +61,14 @@ export const updateTab = async (
   payload: Partial<PayloadTab>,
 ): Promise<AxiosResponse<ResponseType<Category[]>>> => {
   return await httpClient().put(`${url.tabs}/${id}`, {
+    data: payload,
+  });
+};
+
+export const addTab = async (
+  payload: Partial<PayloadTab>,
+): Promise<AxiosResponse<ResponseType<Category[]>>> => {
+  return await httpClient().post(url.tabs, {
     data: payload,
   });
 };

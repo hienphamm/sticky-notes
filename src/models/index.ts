@@ -11,10 +11,12 @@ export interface Category {
 }
 
 interface TabAttributes {
-  category: string;
+  category: {
+    data: Category[];
+  };
   title: string;
   slug: string;
-  content: RawDraftContentState;
+  content: RawDraftContentState | null;
 }
 
 export interface Tab {
@@ -28,7 +30,7 @@ export interface ResponseType<T> {
 
 export interface PayloadCategory extends CategoryAttributes {}
 
-export interface PayloadTab extends TabAttributes {}
+export interface PayloadTab extends Omit<TabAttributes, "category"> {}
 
 export interface ParamsTab {
   category: string;

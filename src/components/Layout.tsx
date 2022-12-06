@@ -445,19 +445,21 @@ const Sidebar = (): ReactElement => {
         </Box>
       </Paper>
 
-      <CommonModal
-        open={isVisibleModal}
-        handleClose={onCloseModal}
-        title={modalTitle as string}
-        footer={
-          <>
-            <Button onClick={onCloseModal}>Cancel</Button>
-            {renderButtonHandler}
-          </>
-        }
-      >
-        <div>{Boolean(renderContentModal) && renderContentModal}</div>
-      </CommonModal>
+      {isVisibleModal && (
+        <CommonModal
+          open={isVisibleModal}
+          handleClose={onCloseModal}
+          title={modalTitle as string}
+          footer={
+            <>
+              <Button onClick={onCloseModal}>Cancel</Button>
+              {renderButtonHandler}
+            </>
+          }
+        >
+          <div>{Boolean(renderContentModal) && renderContentModal}</div>
+        </CommonModal>
+      )}
     </>
   );
 };
