@@ -1,12 +1,16 @@
-import { url } from "../../libs/config";
-import { httpClient } from "../../libs/http.client";
+import { url } from "../libs/config";
+import { httpClient } from "../libs/http.client";
 import { AxiosResponse } from "axios";
 import {
   Category,
+  Content,
+  ParamsContent,
   ParamsTab,
   PayloadCategory,
+  PayloadContent,
   PayloadTab,
   ResponseType,
+  Tab,
 } from "../models";
 import { AxiosPayload } from "../hooks/useAxios";
 
@@ -59,7 +63,7 @@ export const getTabs = (payload: Omit<ParamsTab, "id">): AxiosPayload => {
 export const updateTab = async (
   id: number,
   payload: Partial<PayloadTab>,
-): Promise<AxiosResponse<ResponseType<Category[]>>> => {
+): Promise<AxiosResponse<ResponseType<Tab[]>>> => {
   return await httpClient().put(`${url.tabs}/${id}`, {
     data: payload,
   });
@@ -67,8 +71,49 @@ export const updateTab = async (
 
 export const addTab = async (
   payload: Partial<PayloadTab>,
-): Promise<AxiosResponse<ResponseType<Category[]>>> => {
+): Promise<AxiosResponse<ResponseType<Tab>>> => {
   return await httpClient().post(url.tabs, {
     data: payload,
   });
+};
+
+export const deleteTab = async (
+  id: number,
+): Promise<AxiosResponse<ResponseType<Tab>>> => {
+  return await httpClient().delete(`${url.tabs}/${id}`);
+};
+
+/**
+ *  Content
+ */
+export const getContent = (params: ParamsContent): AxiosPayload => {
+  const { tabId } = params;
+  return {
+    url: `${url.contents}?filters[tab][id][$eq]=${tabId}`,
+    method: "GET",
+  };
+};
+
+export const addContent = async (
+  payload: PayloadContent,
+): Promise<AxiosResponse<ResponseType<Content>>> => {
+  return await httpClient().post(url.contents, {
+    data: payload,
+  });
+};
+
+export const updateContent = async (
+  id: number,
+  payload: Omit<PayloadContent, "tab">,
+): Promise<AxiosResponse<ResponseType<Content>>> => {
+  return await httpClient().put(`${url.contents}/${id}`, {
+    data: payload,
+  });
+};
+
+/**
+ * Authentication
+ */
+export const getUser = async (): Promise<AxiosResponse<ResponseType<any>>> => {
+  return await httpClient().get(url.user);
 };

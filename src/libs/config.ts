@@ -13,4 +13,6 @@ export const config: AxiosRequestConfig = {
 export const url = {
   categories: "categories",
   tabs: "tabs",
+  contents: "contents",
+  user: "users/me",
 };

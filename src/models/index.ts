@@ -16,7 +16,6 @@ interface TabAttributes {
   };
   title: string;
   slug: string;
-  content: RawDraftContentState | null;
 }
 
 export interface Tab {
@@ -35,4 +34,24 @@ export interface PayloadTab extends Omit<TabAttributes, "category"> {}
 export interface ParamsTab {
   category: string;
   id: number;
+}
+
+export interface ContentAttributes {
+  content: RawDraftContentState | null;
+  tab: number;
+}
+
+export interface Content {
+  attributes: ContentAttributes;
+  id: number;
+}
+
+export interface ParamsContent {
+  tabId: number;
+}
+
+export interface PayloadContent extends ContentAttributes {}
+
+export interface Profile {
+  username: string;
 }

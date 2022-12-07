@@ -1,6 +1,6 @@
 import { AxiosResponse, Method } from "axios";
 import { useEffect, useRef, useState } from "react";
-import { httpClient } from "../../libs/http.client";
+import { httpClient } from "../libs/http.client";
 
 interface ReturnType<TResponse> {
   data: TResponse | null;

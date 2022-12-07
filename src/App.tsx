@@ -14,6 +14,7 @@ import { BrowserRouter } from "react-router-dom";
 import { SnackbarProvider } from "notistack";
 import Layout from "./components/Layout";
 import { Routes } from "./routes";
+import AuthContextProvider from "./contexts/AuthContext";
 
 const theme = createTheme({
   palette: {
@@ -32,7 +33,6 @@ const theme = createTheme({
 function App(): ReactElement {
   return (
     <BrowserRouter>
-      <CssBaseline />
       <SnackbarProvider
         maxSnack={1}
         anchorOrigin={{
@@ -41,11 +41,14 @@ function App(): ReactElement {
         }}
         autoHideDuration={2000}
       >
-        <ThemeProvider theme={theme}>
-          <Layout>
-            <Routes />
-          </Layout>
-        </ThemeProvider>
+        <AuthContextProvider>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Layout>
+              <Routes />
+            </Layout>
+          </ThemeProvider>
+        </AuthContextProvider>
       </SnackbarProvider>
     </BrowserRouter>
   );

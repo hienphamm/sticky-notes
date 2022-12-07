@@ -6,13 +6,13 @@ import {
 } from "draft-js";
 import { useCallback, useEffect, useState } from "react";
 import { Editor } from "react-draft-wysiwyg";
+import useAxios from "../hooks/useAxios";
 import useDebounce from "../hooks/useDebounce";
-import { updateTab } from "../services";
+import { Content, Tab } from "../models";
+import { getContent, updateContent } from "../services";
 
 interface DraftEditorProps {
-  initContent: RawDraftContentState | null;
-  loaded: boolean;
-  tabId: number;
+  tab: Tab;
 }
 
 const IDLE_TIMEOUT = 0.5 * 1000;
@@ -23,18 +23,16 @@ const originRawDraft = {
   entityMap: {},
 } as RawDraftContentState;
 
-function DraftEditor({
-  initContent,
-  loaded,
-  tabId,
-}: DraftEditorProps): JSX.Element {
+function DraftEditor({ tab }: DraftEditorProps): JSX.Element {
   const [editorState, setEditorState] = useState(
-    EditorState.createWithContent(
-      convertFromRaw(initContent ?? originRawDraft),
-    ),
+    EditorState.createWithContent(convertFromRaw(originRawDraft)),
   );
   const [convertedEditorState, setConvertedEditorState] = useState(
     convertToRaw(editorState.getCurrentContent()),
+  );
+
+  const responseContent = useAxios<number, Content[]>(
+    getContent({ tabId: tab.id }),
   );
 
   const debouncedEditorState = useDebounce(convertedEditorState, IDLE_TIMEOUT);
@@ -42,19 +40,18 @@ function DraftEditor({
   useEffect(() => {
     setEditorState(
       EditorState.createWithContent(
-        convertFromRaw(initContent ?? originRawDraft),
+        convertFromRaw(
+          responseContent.data?.[0]?.attributes?.content ?? originRawDraft,
+        ),
       ),
     );
-  }, [initContent, loaded]);
+  }, [responseContent.data]);
 
-  const onEditorStateChange = useCallback(
-    (value: EditorState) => {
-      setEditorState(value);
-      const converted = convertToRaw(editorState.getCurrentContent());
-      setConvertedEditorState(converted);
-    },
-    [editorState],
-  );
+  const onEditorStateChange = useCallback((value: EditorState) => {
+    setEditorState(value);
+    const converted = convertToRaw(value.getCurrentContent());
+    setConvertedEditorState(converted);
+  }, []);
 
   useEffect(() => {
     onUpdateContent();
@@ -62,15 +59,18 @@ function DraftEditor({
   }, [JSON.stringify(debouncedEditorState)]);
 
   const onUpdateContent = useCallback(() => {
-    if (Number.isInteger(tabId)) {
-      updateTab(tabId, {
+    if (
+      Array.isArray(responseContent.data) &&
+      Number.isInteger(responseContent.data?.[0]?.id)
+    ) {
+      updateContent(responseContent.data[0].id, {
         content: debouncedEditorState,
       }).catch((err) => {
         console.log(err);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(debouncedEditorState), tabId]);
+  }, [JSON.stringify(debouncedEditorState), responseContent.data?.[0]?.id]);
 
   return (
     <Editor

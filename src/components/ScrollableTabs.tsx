@@ -21,7 +21,7 @@ import React, {
 } from "react";
 import { ActionType } from "../constants";
 import { Tab } from "../models";
-import { addTab } from "../services";
+import { addContent, addTab, deleteTab, updateTab } from "../services";
 import CommonModal from "./Modal";
 
 interface ScrollableTabsProps {
@@ -90,10 +90,9 @@ function ScrollableTabs({
     resetError();
   }, []);
 
-  const onOpenModal = (type: ActionType, tab?: Tab): void => {
+  const onOpenModal = (type: ActionType): void => {
     setActionType(type);
     setIsVisibleModal(true);
-    setSelectedTab(tab);
     resetError();
   };
 
@@ -159,12 +158,13 @@ function ScrollableTabs({
         const payload = convertPayload(valueAddTab);
         addTab(payload)
           .then((result) => {
-            const { status } = result;
+            const { status, data } = result;
             if (status === 200) {
+              onAddContent(data.data.id);
               enqueueSnackbar("Add new Tab Successfully !", {
                 variant: "success",
               });
-              setValueEditTab("");
+              setValueAddTab("");
               onRefetchData();
               onCloseModal();
             }
@@ -195,6 +195,7 @@ function ScrollableTabs({
           });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     categoryId,
     convertPayload,
@@ -205,67 +206,99 @@ function ScrollableTabs({
     valueAddTab,
   ]);
 
+  const onAddContent = (tabId: number): void => {
+    if (Number.isInteger(tabId)) {
+      addContent({
+        tab: tabId,
+        content: null,
+      }).catch((err) => {
+        console.log(err);
+      });
+    }
+  };
+
   const onEditTab = useCallback(() => {
     if (valueEditTab.length === 0) {
       handleError(valueEditTab);
     } else {
       if (selectedTab?.id != null) {
-        // setIsPending(true);
-        // const payload = convertPayload(valueEditTab);
-        // updateTab(selectedTab?.id, payload)
-        //   .then((result) => {
-        //     const { status } = result;
-        //     if (status === 200) {
-        //       enqueueSnackbar("Edit new Tab Successfully !", {
-        //         variant: "success",
-        //       });
-        //       setValueEditTab("");
-        //       handleRefetchData();
-        //       onCloseModal();
-        //     }
-        //   })
-        //   .catch((err) => {
-        //     console.error(err);
-        //     if (err.response.data.error.message !== null) {
-        //       enqueueSnackbar(err.response.data.error.message, {
-        //         variant: "error",
-        //       });
-        //     } else {
-        //       enqueueSnackbar(err.message, {
-        //         variant: "error",
-        //       });
-        //     }
-        //   })
-        //   .finally(() => {
-        //     setIsPending(false);
-        //   });
+        if (Number.isInteger(categoryId)) {
+          setIsPending(true);
+          updateTab(selectedTab.id, {
+            title: valueEditTab,
+          })
+            .then((result) => {
+              const { status } = result;
+              if (status === 200) {
+                enqueueSnackbar("Edit Tab Successfully !", {
+                  variant: "success",
+                });
+                setValueEditTab("");
+                onRefetchData();
+                setContextMenu(null);
+                onCloseModal();
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+              if (err.response.data.error.message !== null) {
+                if (err.response.data.error?.details?.errors?.length > 0) {
+                  enqueueSnackbar(
+                    err.response.data.error?.details?.errors[0].message,
+                    {
+                      variant: "error",
+                    },
+                  );
+                } else {
+                  enqueueSnackbar(err.response.data.error.message, {
+                    variant: "error",
+                  });
+                }
+              } else {
+                enqueueSnackbar(err.message, {
+                  variant: "error",
+                });
+              }
+            })
+            .finally(() => {
+              setIsPending(false);
+            });
+        }
       }
     }
-  }, []);
+  }, [
+    categoryId,
+    enqueueSnackbar,
+    handleError,
+    onCloseModal,
+    onRefetchData,
+    selectedTab?.id,
+    valueEditTab,
+  ]);
 
   const onDeleteTab = useCallback(() => {
     if (selectedTab?.id != null) {
-      // deleteTab(selectedTab?.id)
-      //   .then((result) => {
-      //     const { status } = result;
-      //     if (status === 200) {
-      //       enqueueSnackbar("Delete Successfully !", {
-      //         variant: "success",
-      //       });
-      //       onCloseModal();
-      //       setSelectedTab(undefined);
-      //       handleRefetchData();
-      //     }
-      //   })
-      //   .catch((err) => {
-      //     console.log(err);
-      //     enqueueSnackbar(err.message, {
-      //       variant: "error",
-      //     });
-      //   });
+      deleteTab(selectedTab?.id)
+        .then((result) => {
+          const { status } = result;
+          if (status === 200) {
+            enqueueSnackbar("Delete Successfully !", {
+              variant: "success",
+            });
+            setSelectedTab(undefined);
+            onRefetchData();
+            setContextMenu(null);
+            onCloseModal();
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          enqueueSnackbar(err.message, {
+            variant: "error",
+          });
+        });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [enqueueSnackbar, onCloseModal, onRefetchData, selectedTab?.id]);
 
   const renderFormControl = useCallback(
     (type: ActionType) => {
@@ -277,6 +310,7 @@ function ScrollableTabs({
           variant="outlined"
         >
           <OutlinedInput
+            autoFocus
             size="small"
             fullWidth
             value={type === "edit" ? valueEditTab : valueAddTab}
@@ -354,29 +388,30 @@ function ScrollableTabs({
         }}
       >
         {Array.isArray(tabs) && tabs.length > 0 && activeTab !== null && (
-          <div
-            onContextMenu={handleContextMenu}
+          <Tabs
+            value={activeTab}
+            onChange={handleChangeTab}
+            variant="scrollable"
+            scrollButtons="auto"
             style={{ cursor: "context-menu" }}
           >
-            <Tabs
-              value={activeTab}
-              onChange={handleChangeTab}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              {!loaded
-                ? "Loading ..."
-                : Array.isArray(tabs) &&
-                  tabs?.map((tab) => (
-                    <TabMui
-                      key={tab.id}
-                      value={tab.id}
-                      label={<Typography>{tab.attributes.title}</Typography>}
-                      wrapped
-                    />
-                  ))}
-            </Tabs>
-          </div>
+            {!loaded
+              ? "Loading ..."
+              : Array.isArray(tabs) &&
+                tabs?.map((tab) => (
+                  <TabMui
+                    key={tab.id}
+                    value={tab.id}
+                    onContextMenu={(event) => {
+                      handleContextMenu(event);
+                      setSelectedTab(tab);
+                      setValueEditTab(tab.attributes.title);
+                    }}
+                    label={<Typography>{tab.attributes.title}</Typography>}
+                    wrapped
+                  />
+                ))}
+          </Tabs>
         )}
 
         <Button
@@ -417,10 +452,10 @@ function ScrollableTabs({
             : undefined
         }
       >
-        <MenuItem>
+        <MenuItem onClick={() => onOpenModal("edit")}>
           <Typography>Rename</Typography>
         </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={() => onOpenModal("delete")}>
           <Typography>Delete</Typography>
         </MenuItem>
       </Menu>

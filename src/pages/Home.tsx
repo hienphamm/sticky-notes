@@ -27,12 +27,12 @@ function Home(): ReactElement {
   const categoryId = useMemo(() => {
     return (
       Array.isArray(categories.data) &&
-      categories.data.find((category) => category.id)?.id
+      categories.data.find((x) => x.attributes.link === category)?.id
     );
-  }, [categories.data]);
+  }, [categories.data, category]);
 
-  const tabId = useMemo(() => {
-    return tabs.data?.find((x) => x.id === activeTab)?.id;
+  const tab = useMemo(() => {
+    return tabs.data?.find((x) => x.id === activeTab);
   }, [activeTab, tabs]);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ function Home(): ReactElement {
     if (Array.isArray(tabs.data) && tabs.data?.length !== 0) {
       setActiveTab(tabs?.data[0]?.id);
     }
-  }, [setActiveTab, tabs?.data]);
+  }, [tabs?.data]);
 
   const handleChangeTab = (
     event: React.SyntheticEvent,
@@ -63,15 +63,9 @@ function Home(): ReactElement {
           position: "relative",
         }}
       >
-        <DraftEditor
-          loaded={tabs.loaded}
-          initContent={
-            tabs.data?.[0]?.attributes.content != null
-              ? tabs.data?.[0]?.attributes.content
-              : null
-          }
-          tabId={tabId!}
-        />
+        {Number.isInteger(tab?.id) && tab !== undefined && (
+          <DraftEditor tab={tab} />
+        )}
         <Box
           sx={{
             position: "absolute",
