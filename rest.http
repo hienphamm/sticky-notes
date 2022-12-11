@@ -1,0 +1,5 @@
+PUT http://localhost:1337/api/categories/67
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNjcwNzQ0MTY0LCJleHAiOjE2NzMzMzYxNjR9.aUUaAsEvuRn53LMpV7Z-ldcHUSyC2MdLbWT9skO48eA
+
+{"data":{"title":"sddd 22","link":"/app/sddd-22"}}

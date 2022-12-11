@@ -8,7 +8,10 @@ import {
   ParamsTab,
   PayloadCategory,
   PayloadContent,
+  PayloadLogin,
+  PayloadRegister,
   PayloadTab,
+  Profile,
   ResponseType,
   Tab,
 } from "../models";
@@ -114,6 +117,22 @@ export const updateContent = async (
 /**
  * Authentication
  */
-export const getUser = async (): Promise<AxiosResponse<ResponseType<any>>> => {
+export const getUser = async (): Promise<AxiosResponse<Profile>> => {
   return await httpClient().get(url.user);
+};
+
+export const login = async (
+  payload: PayloadLogin,
+): Promise<
+  AxiosResponse<{
+    jwt: string;
+  }>
+> => {
+  return await httpClient().post(url.login, payload);
+};
+
+export const register = async (
+  payload: PayloadRegister,
+): Promise<AxiosResponse<ResponseType<any>>> => {
+  return await httpClient().post(url.register, payload);
 };

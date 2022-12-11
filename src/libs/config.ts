@@ -15,4 +15,6 @@ export const url = {
   tabs: "tabs",
   contents: "contents",
   user: "users/me",
+  login: "/auth/local",
+  register: "/auth/local/register",
 };

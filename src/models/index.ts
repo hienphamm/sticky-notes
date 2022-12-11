@@ -53,5 +53,20 @@ export interface ParamsContent {
 export interface PayloadContent extends ContentAttributes {}
 
 export interface Profile {
+  id: number;
   username: string;
+  email: string;
 }
+
+export interface PayloadLogin {
+  identifier: string;
+  password: string;
+}
+
+export interface PayloadRegister {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export type AuthenticationType = "login" | "register";

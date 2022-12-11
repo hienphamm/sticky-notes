@@ -50,9 +50,10 @@ const AuthContextProvider = ({
     setIsLoading(true);
     getUser()
       .then((result) => {
-        const { status } = result;
+        const { status, data } = result;
         if (status === 200) {
-          console.log(result);
+          setIsAuthenticated(true);
+          setProfile(data);
         }
       })
       .catch((err) => {
