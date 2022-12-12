@@ -32,7 +32,7 @@ export interface PayloadCategory extends CategoryAttributes {}
 export interface PayloadTab extends Omit<TabAttributes, "category"> {}
 
 export interface ParamsTab {
-  category: string;
+  categoryId: number;
   id: number;
 }
 

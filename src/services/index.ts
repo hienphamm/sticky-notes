@@ -56,9 +56,9 @@ export const updateCategory = async (
  */
 
 export const getTabs = (payload: Omit<ParamsTab, "id">): AxiosPayload => {
-  const { category } = payload;
+  const { categoryId } = payload;
   return {
-    url: `${url.tabs}?sort[0]=id&filters[category][link][$eq]=${category}`,
+    url: `${url.tabs}?category=${categoryId as unknown as string}`,
     method: "GET",
   };
 };
@@ -92,7 +92,7 @@ export const deleteTab = async (
 export const getContent = (params: ParamsContent): AxiosPayload => {
   const { tabId } = params;
   return {
-    url: `${url.contents}?filters[tab][id][$eq]=${tabId}`,
+    url: `${url.contents}?tab=${tabId}`,
     method: "GET",
   };
 };

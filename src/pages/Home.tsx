@@ -18,18 +18,20 @@ function Home(): ReactElement {
 
   const categories = useAxios<any, Category[]>(getCategories(), category);
 
-  const tabs = useAxios<string, Tab[]>(
-    getTabs({
-      category,
-    }),
-  );
-
   const categoryId = useMemo(() => {
     return (
       Array.isArray(categories.data) &&
       categories.data.find((x) => x.attributes.link === category)?.id
     );
   }, [categories.data, category]);
+
+  const tabs = useAxios<string, Tab[]>(
+    getTabs({
+      categoryId: categoryId as number,
+    }),
+    null,
+    Boolean(categoryId),
+  );
 
   const tab = useMemo(() => {
     return tabs.data?.find((x) => x.id === activeTab);
