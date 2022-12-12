@@ -16,7 +16,7 @@ function Home(): ReactElement {
     return location.pathname;
   }, [location.pathname]);
 
-  const categories = useAxios<any, Category[]>(getCategories());
+  const categories = useAxios<any, Category[]>(getCategories(), category);
 
   const tabs = useAxios<string, Tab[]>(
     getTabs({

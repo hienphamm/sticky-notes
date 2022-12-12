@@ -19,6 +19,7 @@ export interface AxiosPayload<TPayload = any, TParams = any> {
 
 function useAxios<TPayload, TResponse>(
   { url, method, payload, params }: AxiosPayload<TPayload>,
+  dependencies?: any,
   ready: boolean = true,
 ): ReturnType<TResponse> {
   const [data, setData] = useState<TResponse | null>(null);
@@ -53,7 +54,7 @@ function useAxios<TPayload, TResponse>(
         }
       })();
     }
-  }, [method, params, payload, refetch, url, ready]);
+  }, [method, params, payload, refetch, url, ready, dependencies]);
 
   const onRefetch = (): void => {
     setRefetch(!refetch);

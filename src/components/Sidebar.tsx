@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { ReactElement, useCallback, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ActionType } from "../constants";
 import useAxios from "../hooks/useAxios";
 import { Category, PayloadCategory } from "../models";
@@ -34,11 +34,14 @@ import {
 import CommonModal from "./Modal";
 
 export const Sidebar = (): ReactElement => {
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
-  const { data, onRefetch, loaded } = useAxios<any, Category[]>(
-    getCategories(),
-  );
+  const {
+    data: categories,
+    onRefetch,
+    loaded,
+  } = useAxios<any, Category[]>(getCategories());
   const { pathname } = useLocation();
   const [isVisibleModal, setIsVisibleModal] = useState(false);
   const [actionType, setActionType] = useState<Exclude<
@@ -60,7 +63,7 @@ export const Sidebar = (): ReactElement => {
     if (selectedCategory?.id != null) {
       deleteCategory(selectedCategory?.id)
         .then((result) => {
-          const { status } = result;
+          const { status, data } = result;
           if (status === 200) {
             enqueueSnackbar("Delete Successfully !", {
               variant: "success",
@@ -68,6 +71,12 @@ export const Sidebar = (): ReactElement => {
             onCloseModal();
             setSelectedCategory(undefined);
             handleRefetchData();
+            if (Array.isArray(data.data) && data.data.length > 0) {
+              const url = data.data?.[0].link;
+              navigate(url);
+            } else {
+              navigate("/app");
+            }
           }
         })
         .catch((err) => {
@@ -161,6 +170,8 @@ export const Sidebar = (): ReactElement => {
             });
             setValueAddCategory("");
             handleRefetchData();
+            const url = result.data.data.attributes.link;
+            navigate(url);
           }
         })
         .catch((err) => {
@@ -250,7 +261,7 @@ export const Sidebar = (): ReactElement => {
                 onEditCategory();
               }
             }}
-            placeholder="Enter Category ..."
+            placeholder="Enter new category ..."
           />
           <FormHelperText>{error.edit}</FormHelperText>
         </FormControl>
@@ -311,8 +322,8 @@ export const Sidebar = (): ReactElement => {
         ) : (
           <>
             <MenuList>
-              {Array.isArray(data) ? (
-                data?.map((category) => (
+              {Array.isArray(categories) ? (
+                categories?.map((category) => (
                   <Link
                     to={category.attributes.link}
                     key={category.id}
@@ -386,7 +397,7 @@ export const Sidebar = (): ReactElement => {
                       </IconButton>
                     </InputAdornment>
                   }
-                  placeholder="Enter Category ..."
+                  placeholder="Enter new category ..."
                 />
                 <FormHelperText>{error.new}</FormHelperText>
               </FormControl>

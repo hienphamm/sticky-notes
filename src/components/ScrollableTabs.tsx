@@ -414,16 +414,18 @@ function ScrollableTabs({
           </Tabs>
         )}
 
-        <Button
-          variant="contained"
-          onClick={() => onOpenModal("new")}
-          sx={{
-            height: "48px",
-            borderRadius: "unset",
-          }}
-        >
-          <AddIcon />
-        </Button>
+        {Number.isInteger(categoryId) && (
+          <Button
+            variant="contained"
+            onClick={() => onOpenModal("new")}
+            sx={{
+              height: "48px",
+              borderRadius: "unset",
+            }}
+          >
+            <AddIcon />
+          </Button>
+        )}
       </Stack>
 
       {isVisibleModal && (
