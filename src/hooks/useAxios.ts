@@ -39,9 +39,6 @@ function useAxios<TPayload, TResponse>(
           const response: AxiosResponse<{
             data: TResponse;
           }> = await httpClient().request({
-            data: {
-              params: "tabs?filters[category][title][$eq]=reactjs",
-            },
             signal: controllerRef.current.signal,
             method,
             url,

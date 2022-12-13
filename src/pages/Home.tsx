@@ -3,9 +3,10 @@ import React, { ReactElement, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import DraftEditor from "../components/DraftEditor";
 import ScrollableTabs from "../components/ScrollableTabs";
+import { useCategoryContext } from "../contexts/CategoryContext";
 import useAxios from "../hooks/useAxios";
-import { Category, Tab } from "../models";
-import { getCategories, getTabs } from "../services";
+import { Tab } from "../models";
+import { getTabs } from "../services";
 
 function Home(): ReactElement {
   const location = useLocation();
@@ -16,14 +17,14 @@ function Home(): ReactElement {
     return location.pathname;
   }, [location.pathname]);
 
-  const categories = useAxios<any, Category[]>(getCategories(), category);
+  const { categories } = useCategoryContext();
 
   const categoryId = useMemo(() => {
     return (
-      Array.isArray(categories.data) &&
-      categories.data.find((x) => x.attributes.link === category)?.id
+      Array.isArray(categories) &&
+      categories.find((x) => x.attributes.link === category)?.id
     );
-  }, [categories.data, category]);
+  }, [categories, category]);
 
   const tabs = useAxios<string, Tab[]>(
     getTabs({

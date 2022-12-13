@@ -6,15 +6,15 @@ import "@fontsource/roboto/700.css";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 
 import { CssBaseline } from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 import { ReactElement } from "react";
 import { BrowserRouter } from "react-router-dom";
 
 import { SnackbarProvider } from "notistack";
-import Layout from "./components/Layout";
-import { Routes } from "./routes";
 import AuthContextProvider from "./contexts/AuthContext";
+import { Routes } from "./routes";
+import CategoryContextProvider from "./contexts/CategoryContext";
 
 const theme = createTheme({
   palette: {
@@ -42,12 +42,12 @@ function App(): ReactElement {
         autoHideDuration={2000}
       >
         <AuthContextProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Layout>
+          <CategoryContextProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
               <Routes />
-            </Layout>
-          </ThemeProvider>
+            </ThemeProvider>
+          </CategoryContextProvider>
         </AuthContextProvider>
       </SnackbarProvider>
     </BrowserRouter>

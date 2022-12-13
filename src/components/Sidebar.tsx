@@ -19,29 +19,22 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { grey } from "@mui/material/colors";
 import { useSnackbar } from "notistack";
 import React, { ReactElement, useCallback, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ActionType } from "../constants";
-import useAxios from "../hooks/useAxios";
+import { useCategoryContext } from "../contexts/CategoryContext";
+import { formatDate } from "../helpers/date-time";
 import { Category, PayloadCategory } from "../models";
-import {
-  addNewCategory,
-  deleteCategory,
-  updateCategory,
-  getCategories,
-} from "../services";
+import { addNewCategory, deleteCategory, updateCategory } from "../services";
 import CommonModal from "./Modal";
 
 export const Sidebar = (): ReactElement => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
-  const {
-    data: categories,
-    onRefetch,
-    loaded,
-  } = useAxios<any, Category[]>(getCategories());
+  const { categories, onRefetch, loaded } = useCategoryContext();
   const { pathname } = useLocation();
   const [isVisibleModal, setIsVisibleModal] = useState(false);
   const [actionType, setActionType] = useState<Exclude<
@@ -332,7 +325,16 @@ export const Sidebar = (): ReactElement => {
                       textDecoration: "unset",
                     }}
                   >
-                    <MenuItem selected={pathname === category.attributes.link}>
+                    <MenuItem
+                      selected={pathname === category.attributes.link}
+                      sx={{
+                        "&:hover": {
+                          ".action": {
+                            display: "block",
+                          },
+                        },
+                      }}
+                    >
                       <ListItemIcon>
                         <CodeIcon />
                       </ListItemIcon>
@@ -342,8 +344,24 @@ export const Sidebar = (): ReactElement => {
                         }}
                       >
                         {category.attributes.title}
+                        <br />
+                        <Typography
+                          sx={{
+                            fontSize: "12px",
+                            color: grey[700],
+                          }}
+                        >
+                          {formatDate(category.attributes.publishedAt)}
+                        </Typography>
                       </ListItemText>
                       <ListItemIcon
+                        className="action"
+                        sx={{
+                          display: "none",
+                          "&:hover": {
+                            color: "primary.main",
+                          },
+                        }}
                         onClick={() => {
                           setValueEditCategory(category.attributes.title);
                           onOpenModal("edit", category);
@@ -352,6 +370,13 @@ export const Sidebar = (): ReactElement => {
                         <ModeEditIcon fontSize="small" />
                       </ListItemIcon>
                       <ListItemIcon
+                        className="action"
+                        sx={{
+                          display: "none",
+                          "&:hover": {
+                            color: "error.main",
+                          },
+                        }}
                         onClick={() => onOpenModal("delete", category)}
                       >
                         <RemoveCircleOutlineIcon fontSize="small" />

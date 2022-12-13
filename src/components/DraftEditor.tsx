@@ -15,7 +15,7 @@ interface DraftEditorProps {
   tab: Tab;
 }
 
-const IDLE_TIMEOUT = 0.5 * 1000;
+const IDLE_TIMEOUT = 0.2 * 1000;
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const originRawDraft = {
@@ -77,17 +77,7 @@ function DraftEditor({ tab }: DraftEditorProps): JSX.Element {
       editorState={editorState}
       onEditorStateChange={onEditorStateChange}
       toolbar={{
-        options: [
-          "inline",
-          "blockType",
-          "fontSize",
-          "list",
-          "textAlign",
-          "colorPicker",
-          "link",
-          "embedded",
-          "history",
-        ],
+        options: ["inline", "fontSize", "colorPicker", "history"],
       }}
       editorStyle={{
         height: "calc(100vh - 210px)",

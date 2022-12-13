@@ -136,3 +136,7 @@ export const register = async (
 ): Promise<AxiosResponse<ResponseType<any>>> => {
   return await httpClient().post(url.register, payload);
 };
+
+export const logout = async (): Promise<AxiosResponse<ResponseType<any>>> => {
+  return await httpClient().get(url.logout);
+};

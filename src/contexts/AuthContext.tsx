@@ -8,7 +8,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { getToken } from "../helpers/auth-helper";
+import { getToken, removeToken } from "../helpers/auth-helper";
 import { Profile } from "../models";
 import { getUser } from "../services";
 
@@ -74,7 +74,8 @@ const AuthContextProvider = ({
   }, [fetchLoggedInUser, token]);
 
   const onLogout = (): void => {
-    setIsAuthenticated(false);
+    removeToken();
+    window.location.href = "/app";
   };
 
   const authContextData = {

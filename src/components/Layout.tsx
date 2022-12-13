@@ -1,15 +1,12 @@
 import { Container, Grid } from "@mui/material";
 
 import { ReactElement } from "react";
+import { Outlet } from "react-router";
 import { Header } from "./Header";
 
 import { Sidebar } from "./Sidebar";
 
-interface Props {
-  children: ReactElement;
-}
-
-function Layout({ children }: Props): ReactElement {
+function Layout(): ReactElement {
   return (
     <>
       <Container maxWidth={false}>
@@ -21,7 +18,7 @@ function Layout({ children }: Props): ReactElement {
             <Sidebar />
           </Grid>
           <Grid item md={9} lg={10}>
-            {children}
+            <Outlet />
           </Grid>
         </Grid>
       </Container>

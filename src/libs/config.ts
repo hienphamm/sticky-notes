@@ -17,4 +17,5 @@ export const url = {
   user: "users/me",
   login: "/auth/local",
   register: "/auth/local/register",
+  logout: "/auth/logout",
 };

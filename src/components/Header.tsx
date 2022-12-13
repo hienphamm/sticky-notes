@@ -1,11 +1,7 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 import { useSnackbar } from "notistack";
 import React, { FormEvent, ReactElement, useState } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
@@ -17,7 +13,7 @@ import CommonModal from "./Modal";
 export const Header = (): ReactElement => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, profile, onLogout } = useAuthContext();
   const [isVisibleModal, setIsVisibleModal] = useState(false);
   const [actionType, setActionType] = useState<AuthenticationType>("login");
   const [formValues, setFormValues] = useState({
@@ -101,7 +97,7 @@ export const Header = (): ReactElement => {
               variant: "error",
             });
           } else {
-            enqueueSnackbar("Failed to regiser !", {
+            enqueueSnackbar("Failed to register !", {
               variant: "error",
             });
           }
@@ -127,7 +123,19 @@ export const Header = (): ReactElement => {
           />
         </Box>
         {isAuthenticated ? (
-          <Avatar>H</Avatar>
+          <div>
+            Welcome <b>{profile.username}</b>
+            <Tooltip title="Sign out">
+              <IconButton
+                onClick={onLogout}
+                sx={{
+                  ml: 1,
+                }}
+              >
+                <ExitToAppIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
         ) : (
           <Button variant="outlined" onClick={onOpenModal}>
             Login

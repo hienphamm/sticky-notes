@@ -88,6 +88,8 @@ function ScrollableTabs({
     setActionType(null);
     setIsVisibleModal(false);
     resetError();
+    setValueAddTab("");
+    setValueEditTab("");
   }, []);
 
   const onOpenModal = (type: ActionType): void => {
@@ -140,7 +142,6 @@ function ScrollableTabs({
     (value: string) => {
       const payload = {
         title: value,
-        slug: value.toLocaleLowerCase().replace(" ", "-"),
         content: null,
         category: categoryId,
       };

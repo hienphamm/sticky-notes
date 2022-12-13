@@ -3,6 +3,7 @@ import { RawDraftContentState } from "react-draft-wysiwyg";
 interface CategoryAttributes {
   title: string;
   link: string;
+  publishedAt: string;
 }
 
 export interface Category {
@@ -27,7 +28,8 @@ export interface ResponseType<T> {
   data: T;
 }
 
-export interface PayloadCategory extends CategoryAttributes {}
+export interface PayloadCategory
+  extends Omit<CategoryAttributes, "publishedAt"> {}
 
 export interface PayloadTab extends Omit<TabAttributes, "category"> {}
 
