@@ -1,4 +1,11 @@
-import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FormEvent, ReactElement, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -108,7 +115,7 @@ export const Login = (): ReactElement => {
   };
 
   return (
-    <>
+    <Container maxWidth={"xs"}>
       <form onSubmit={onSubmit}>
         <h1>{actionType === "login" ? "Login" : "Register"}</h1>
         <Box mt={1}>
@@ -196,20 +203,12 @@ export const Login = (): ReactElement => {
             )}
           </Stack>
           <Stack flexDirection={"row"} justifyContent={"end"} mt={3}>
-            <Button
-              variant="outlined"
-              style={{
-                marginRight: "9px",
-              }}
-            >
-              Cancel
-            </Button>
             <Button variant="contained" type="submit">
               {actionType === "login" ? "Login" : "Register"}
             </Button>
           </Stack>
         </Box>
       </form>
-    </>
+    </Container>
   );
 };

@@ -4,7 +4,7 @@ import {
   EditorState,
   RawDraftContentState,
 } from "draft-js";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Editor } from "react-draft-wysiwyg";
 import useAxios from "../hooks/useAxios";
 import useDebounce from "../hooks/useDebounce";
@@ -13,6 +13,7 @@ import { getContent, updateContent } from "../services";
 
 interface DraftEditorProps {
   tab: Tab;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const IDLE_TIMEOUT = 0.2 * 1000;
@@ -23,7 +24,7 @@ const originRawDraft = {
   entityMap: {},
 } as RawDraftContentState;
 
-function DraftEditor({ tab }: DraftEditorProps): JSX.Element {
+function DraftEditor({ tab, setIsLoading }: DraftEditorProps): JSX.Element {
   const [editorState, setEditorState] = useState(
     EditorState.createWithContent(convertFromRaw(originRawDraft)),
   );
@@ -63,11 +64,16 @@ function DraftEditor({ tab }: DraftEditorProps): JSX.Element {
       Array.isArray(responseContent.data) &&
       Number.isInteger(responseContent.data?.[0]?.id)
     ) {
+      setIsLoading(true);
       updateContent(responseContent.data[0].id, {
         content: debouncedEditorState,
-      }).catch((err) => {
-        console.log(err);
-      });
+      })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(debouncedEditorState), responseContent.data?.[0]?.id]);

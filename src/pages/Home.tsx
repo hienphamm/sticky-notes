@@ -13,6 +13,8 @@ function Home(): ReactElement {
 
   const [activeTab, setActiveTab] = useState<number | null>(null);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const category = useMemo(() => {
     return location.pathname;
   }, [location.pathname]);
@@ -54,7 +56,9 @@ function Home(): ReactElement {
     event: React.SyntheticEvent,
     newValue: number,
   ): void => {
-    setActiveTab(newValue);
+    if (!isLoading) {
+      setActiveTab(newValue);
+    }
   };
 
   return (
@@ -67,7 +71,7 @@ function Home(): ReactElement {
         }}
       >
         {Number.isInteger(tab?.id) && tab !== undefined && (
-          <DraftEditor tab={tab} />
+          <DraftEditor tab={tab} setIsLoading={setIsLoading} />
         )}
         <Box
           sx={{

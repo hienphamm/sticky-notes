@@ -61,6 +61,7 @@ const AuthContextProvider = ({
         enqueueSnackbar("Failed to get User", {
           variant: "error",
         });
+        removeToken();
       })
       .finally(() => {
         setIsLoading(false);
